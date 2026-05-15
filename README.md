@@ -6,7 +6,7 @@
 
 <p>
   <strong>AI in Healthcare</strong><br><br>
-  <img title="UPC Logo" alt="UPC Logo" src="media/logo.png" width="400">
+  <img title="UPC Logo" alt="UPC Logo" src="_report/media/logo.png" width="400">
 </p>
 
 <p>
