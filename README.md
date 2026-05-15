@@ -5,8 +5,8 @@
 ### Federated Learning for Pneumonia Classification using GAN-Augmented Chest X-Rays
 
 <p>
-  <strong>AI in Healthcare</strong><br>
-  <img title="UPC Logo" alt="UPC Logo" src="media/logo.png" width="220">
+  <strong>AI in Healthcare</strong><br><br>
+  <img title="UPC Logo" alt="UPC Logo" src="media/logo.png" width="400">
 </p>
 
 <p>
@@ -38,6 +38,7 @@ The objective is to investigate whether synthetic GAN-generated chest X-rays can
 
 ```bash
 FedXR-GAN/
+├── _report/             # Latex files and PDF render
 ├── data/                # Dataset and preprocessing
 ├── gan/                 # GAN architectures and training
 ├── federated/           # Federated Learning pipeline
