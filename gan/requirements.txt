@@ -18,7 +18,7 @@ idna==3.10
 ipython==8.34.0
 jedi==0.19.2
 kagglehub==0.3.10
-keras==3.9.0
+keras==3.13.2
 kiwisolver==1.4.8
 libclang==18.1.1
 Markdown==3.7
