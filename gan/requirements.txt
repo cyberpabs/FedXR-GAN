@@ -47,7 +47,7 @@ optree==0.14.1
 packaging==24.2
 parso==0.8.4
 pexpect==4.9.0
-pillow==11.1.0
+pillow==12.2.0
 prompt_toolkit==3.0.50
 protobuf==5.29.4
 ptyprocess==0.7.0
