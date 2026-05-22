@@ -11,7 +11,7 @@ from dataset_preprocessing import (
 )
 
 if __name__ == '__main__':
-    download_dataset()
+    # download_dataset('chest-xray-pneumonia')
 
     with tf.device(TF_DEVICE):
         dataset = generate_dataset()
