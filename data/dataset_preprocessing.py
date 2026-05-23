@@ -4,7 +4,7 @@ import os
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-from constants import (
+from data.constants import (
     BUFFER_SIZE, 
     BATCH_SIZE, 
     DATASET_DATA,
@@ -38,7 +38,6 @@ def apply_jitter(image):
     
     return image
 
-
 def process_image(file_path, jitter = False):
     # Read the image file as bytes
     img_bytes = tf.io.read_file(file_path)
@@ -46,16 +45,20 @@ def process_image(file_path, jitter = False):
     # Use channels = 1 for grayscale scans
     img_decoded = tf.image.decode_jpeg(img_bytes, channels=1)
 
-    # Resize to 64x64 
+    # Resize the image to a fixed size (e.g., 128x128) for consistency in training
     # NOTE: the original image size varies on each datapoint on 'chest-xray-pneumonia' dataset
     img_resized = tf.image.resize(img_decoded, PREPROCESSED_IMAGE_SIZE) 
-
+    img_scaled = img_resized / 255.0
+    
     if jitter:
         # Apply jitter to the image
-        img_resized = apply_jitter(img_resized)
+        img_scaled = apply_jitter(img_scaled)
+        
+        # Ensure pixel values are still in [0, 1]
+        img_scaled = tf.clip_by_value(img_scaled, 0.0, 1.0)
 
     # Normalize the pixel values to [-1, 1]
-    img_normalized = (img_resized - 127.5) / 127.5
+    img_normalized = (img_scaled * 2.0) - 1.0
     return img_normalized
 
 def generate_dataset(ds_option = 'chest-xray-pneumonia', jitter = False):

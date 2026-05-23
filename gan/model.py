@@ -13,12 +13,14 @@ import matplotlib.pyplot as plt
 import os
 import time
 
-from constants import (
+from data.constants import (
     BATCH_SIZE,
-    NOISE_DIM,
     NUM_EXAMPLES_TO_GENERATE,
     PREPROCESSED_IMAGE_SIZE,
+)
+from gan.constants import (
     CHECKPOINT_DIR,
+    NOISE_DIM
 )
 
 class DCGAN():

@@ -3,7 +3,7 @@ import requests
 import zipfile
 import logging
 from tqdm import tqdm
-from constants import DATASET_OPTIONS
+from data.constants import DATASET_OPTIONS
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 _logger = logging.getLogger(__name__)
@@ -45,13 +45,15 @@ def download_dataset(dataset_option = 'all', extract = True):
         ds_zip_path = os.path.join(ds_path, f"{option}.zip")
 
         # Create directory if it doesn't exist
-        if not os.path.exists(ds_zip_path):
+        is_installed = os.path.exists(ds_path) and len(os.listdir(ds_path)) > 0
+
+        if not is_installed:
             os.makedirs(ds_path, exist_ok = True)
         else:
-            _logger.warning(f"Dataset {ds_zip_path} already exists. Skipping download.")
-
-            # Extract the dataset if [extract] option is True
-            if extract:
+            _logger.warning(f"Dataset at {ds_path} already exists. Skipping download.")
+            
+            # Extract only if the zip is still present and extraction is requested
+            if extract and os.path.exists(ds_zip_path):
                 extract_zip(ds_zip_path, remove = True)
             continue
 

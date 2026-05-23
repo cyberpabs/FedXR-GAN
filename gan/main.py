@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-from constants import TF_DEVICE, EPOCHS
-from dataset_download import download_dataset
-from model import DCGAN
-from dataset_preprocessing import (
+from gan.constants import TF_DEVICE, EPOCHS
+from gan.model import DCGAN
+from data.dataset_download import download_dataset
+from data.dataset_preprocessing import (
     generate_dataset,
     print_dataset_stats,
     store_preprocessed_images,
@@ -11,10 +11,10 @@ from dataset_preprocessing import (
 )
 
 if __name__ == '__main__':
-    # download_dataset('chest-xray-pneumonia')
+    download_dataset('chest-xray-pneumonia')
 
     with tf.device(TF_DEVICE):
-        dataset = generate_dataset()
+        dataset = generate_dataset(jitter=True)
 
         # Show dataset stats and store some preprocessed images
         print_dataset_stats()
