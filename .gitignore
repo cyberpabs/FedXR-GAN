@@ -1,7 +1,22 @@
+# Report stuff
 _report/*
 !_report/
 !_report/main.tex
 !_report/main.pdf
 !_report/sample.bib
 !_report/media
+
+# Misc
 __pycache__
+
+# Dataset folders
+datasets
+dataset_images/
+training_images/
+
+# Model stuff
+models/*
+!models/classifier.py
+checkpoints/
+training_images/
+training_checkpoints/
