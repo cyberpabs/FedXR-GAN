@@ -6,7 +6,7 @@
 
 <p>
   <strong>AI in Healthcare</strong><br><br>
-  <img title="UPC Logo" alt="UPC Logo" src="_report/media/logo.png" width="400">
+  <img title="UPC Logo" alt="UPC Logo" src="doc/media/logo.png" width="400">
 </p>
 
 <p>
@@ -38,7 +38,7 @@ The objective is to investigate whether synthetic GAN-generated chest X-rays can
 
 ```bash
 FedXR-GAN/
-├── _report/             # Latex files and PDF render
+├── doc/                 # Latex files and PDF render
 ├── data/                # Dataset and preprocessing
 ├── gan/                 # GAN architectures and training
 ├── federated/           # Federated Learning pipeline
