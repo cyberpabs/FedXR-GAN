@@ -40,7 +40,7 @@ def main(grid: Grid, context: Context) -> None:
     os.makedirs(os.path.dirname(METRICS_PATH), exist_ok=True)
     with open(METRICS_PATH, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["round", "train_loss", "train_acc", "eval_loss", "eval_acc"])
+        writer.writerow(["round", "train_loss", "train_auc", "eval_loss", "eval_auc"])
 
     for round_num in range(1, num_rounds + 1):
         print(f"Round {round_num}/{num_rounds}")
@@ -59,15 +59,15 @@ def main(grid: Grid, context: Context) -> None:
         eval_metrics = result.evaluate_metrics_clientapp.get(1, {})
 
         train_loss = train_metrics.get("train_loss", float("nan"))
-        train_acc = train_metrics.get("train_acc", float("nan"))
+        train_auc = train_metrics.get("train_auc", float("nan"))
         eval_loss = eval_metrics.get("eval_loss", float("nan"))
-        eval_acc = eval_metrics.get("eval_acc", float("nan"))
+        eval_auc = eval_metrics.get("eval_auc", float("nan"))
 
-        print(f"  train_loss={train_loss:.4f} train_acc={train_acc:.4f} eval_loss={eval_loss:.4f} eval_acc={eval_acc:.4f}")
+        print(f"  train_loss={train_loss:.4f} train_auc={train_auc:.4f} eval_loss={eval_loss:.4f} eval_auc={eval_auc:.4f}")
 
         with open(METRICS_PATH, "a", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([round_num, train_loss, train_acc, eval_loss, eval_acc])
+            writer.writerow([round_num, train_loss, train_auc, eval_loss, eval_auc])
 
     # Save final aggregated model
     model.set_weights(arrays.to_numpy_ndarrays())

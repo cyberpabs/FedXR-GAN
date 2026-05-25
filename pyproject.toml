@@ -36,7 +36,7 @@ clientapp = "federated.client_app:app"
 # These values are read at runtime via context.run_config in server and client.
 # Override any of them without touching code: flwr run . --run-config "num-server-rounds=10"
 [tool.flwr.app.config]
-num-server-rounds = 5
+num-server-rounds = 50
 fraction-train = 0.5    # fraction of available clients to sample each round
 local-epochs = 3        # epochs each client trains locally per round
 num-partitions = 2      # must match options.num-supernodes below

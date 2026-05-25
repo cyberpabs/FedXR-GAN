@@ -23,3 +23,6 @@ training_checkpoints/
 
 # Fed learning
 test_task.py
+
+#venv
+venv

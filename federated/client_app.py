@@ -29,7 +29,7 @@ def train(msg: Message, context: Context):
         optimizer=tf.keras.optimizers.Adam(3e-5),
         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.BinaryAccuracy(name="accuracy"),
-                 tf.keras.metrics.AUC(name="auc")],
+                 tf.keras.metrics.AUC(name="auc", from_logits=True)],
     )
     model.set_weights(msg.content["arrays"].to_numpy_ndarrays())
 
@@ -39,13 +39,13 @@ def train(msg: Message, context: Context):
     history = model.fit(train_ds, validation_data=val_ds, epochs=local_epochs, verbose=0)
 
     train_loss = history.history["loss"][-1]
-    train_acc = history.history["accuracy"][-1]
+    train_auc = history.history["auc"][-1]
     num_examples = sum(len(b) for b, _ in train_ds)
-    print(f"Client {partition_id}: loss={train_loss:.4f} acc={train_acc:.4f}")
+    print(f"Client {partition_id}: loss={train_loss:.4f} auc={train_auc:.4f}")
 
     content = RecordDict({
         "arrays": ArrayRecord(model.get_weights()),
-        "metrics": MetricRecord({"train_loss": train_loss, "train_acc": train_acc,
+        "metrics": MetricRecord({"train_loss": train_loss, "train_auc": train_auc,
                                  "num-examples": float(num_examples)}),
     })
     return Message(content=content, reply_to=msg)
@@ -62,16 +62,16 @@ def evaluate(msg: Message, context: Context):
         optimizer=tf.keras.optimizers.Adam(3e-5),
         loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
         metrics=[tf.keras.metrics.BinaryAccuracy(name="accuracy"),
-                 tf.keras.metrics.AUC(name="auc")],
+                 tf.keras.metrics.AUC(name="auc", from_logits=True)],
     )
     model.set_weights(msg.content["arrays"].to_numpy_ndarrays())
 
     results = model.evaluate(val_ds, return_dict=True, verbose=0)
     num_examples = sum(len(b) for b, _ in val_ds)
-    print(f"Client {partition_id}: val_loss={results['loss']:.4f} val_acc={results['accuracy']:.4f}")
+    print(f"Client {partition_id}: val_loss={results['loss']:.4f} val_auc={results['auc']:.4f}")
 
     content = RecordDict({
-        "metrics": MetricRecord({"eval_loss": results["loss"], "eval_acc": results["accuracy"],
+        "metrics": MetricRecord({"eval_loss": results["loss"], "eval_auc": results["auc"],
                                  "num-examples": float(num_examples)}),
     })
     return Message(content=content, reply_to=msg)

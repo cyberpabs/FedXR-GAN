@@ -8,6 +8,10 @@ import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import tensorflow as tf
+
+# Force CPU execution by hiding all GPUs from TensorFlow
+tf.config.set_visible_devices([], 'GPU')
+
 from data.constants import BATCH_SIZE, PREPROCESSED_IMAGE_SIZE, DATASET_OPTIONS
 from models.classifier import make_classifier, load_test
 
