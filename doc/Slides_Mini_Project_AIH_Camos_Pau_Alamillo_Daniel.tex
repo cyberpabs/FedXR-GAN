@@ -1,0 +1,251 @@
+\documentclass[aspectratio=169]{iticslides}
+\AtBeginDocument{\selectlanguage{english}}
+
+% --- Presentation Meta Data ---
+\title{Federated Learning for Pneumonia Classification using GAN-Augmented Chest X-Rays}
+\author{Pau Camos \& Daniel Alamillo}
+\institute{Universitat Politècnica de Catalunya}
+\date{Mini Project Proposal Defense}
+
+\hypersetup{
+  colorlinks=true,
+  urlcolor=blue,
+  linkcolor=black
+}
+
+\usepackage{caption}
+\captionsetup{justification=centering}
+
+\begin{document}
+
+% --- Title Slide ---
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Agenda}
+  \tableofcontents
+\end{frame}
+
+\section{Context}
+
+% --- Slide 1: Context & AI Challenges ---
+\begin{frame}{Context: Challenges in Healthcare AI}
+  This project illustrates the core challenges AI engineers face in
+  healthcare environments:
+  \begin{itemize}
+  \item \textbf{Private Data:} Sensitive patient records cannot be centralized.
+  \item \textbf{Distributed Data:} Information is spread across
+    multiple distinct hospitals or organizations.
+  \item \textbf{Unbalanced Datasets:} Scarcity of specific
+    diagnostic classes (e.g. a rare diesease datapoint).
+  \end{itemize}
+  
+  \textbf{Core Objective:} Modern CNNs easily achieve high accuracy
+  for this specific classification. The true goal is
+  demonstrating a robust, end-to-end AI pipeline that overcomes
+  these systemic barriers, justifying its use in broader healthcare
+  scenarios.
+\end{frame}
+
+\begin{frame}{Context: Use Case (unbalanced Chest X-Ray classification)}
+  \begin{itemize}
+  \item \textbf{Task:} Binary classification of patient
+    scans (Pneumonia vs. Normal).
+    \vspace{0.3cm}
+  \item Significant class imbalance due to a scarcity of the minority
+    'NORMAL' class.
+    
+    \vspace{0.3cm}
+    
+  \item \textbf{Dataset Source:} \href{https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia}{Chest X-Ray Images (Pneumonia) dataset}.
+  \end{itemize}
+\end{frame}
+
+\section{System Architecture}
+
+\begin{frame}{System Architecture: Solving the Challenges}
+  \begin{itemize}
+  \item \textbf{Generative Adversarial Network (GAN):}
+    \begin{itemize}
+    \item \textit{Solves Unbalanced Data:} A DCGAN architecture
+      generates realistic synthetic images to augment the minority
+      'NORMAL' class.
+    \end{itemize}
+    \vspace{0.3cm}
+  \item \textbf{CNN Classifier:}
+    \begin{itemize}
+    \item \textit{Solves the Use Case:} Performs the binary
+      diagnostic classification (Pneumonia vs. Normal).
+    \end{itemize}
+
+    \vspace{0.3cm}
+
+  \item \textbf{Federated Learning (FL):}
+    \begin{itemize}
+    \item \textit{Solves Distributed Data:} Enables model training
+      across simulated hospital clients without pooling data.
+      
+    \item \textit{Solves Privacy:} Only model weights are shared
+      centrally via FedAvg, keeping raw data local.
+      
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Generative Adversarial Network (GAN) (1)}
+
+  \begin{figure}
+    \centering
+    \includegraphics[width=0.2\textwidth]{media/restore_model_image_example.png}
+    \caption{GAN generated \texttt{NORMAL} class image}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Generative Adversarial Network (GAN) (2)}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.5\textwidth]{media/generated_image_no_training.png}
+        \caption{GAN generated image (without training)}
+      \end{figure}
+    \end{column}
+
+    \begin{column}{0.5\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.5\textwidth]{media/restore_model_image_example.png}
+        \caption{GAN generated image (after 7000 \texttt{epochs})}
+      \end{figure}      
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{CNN Classifier}
+\end{frame}
+
+\begin{frame}{Federated Learning (FL)}
+\end{frame}
+
+\section{Results}
+
+\begin{frame}{Results: Centralized vs. Federated Training (1)}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Centralized Training AUC}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{media/auc_centralized.png}
+        \caption{Train Baseline Performance (AUC). \\ X-axis corresponds
+          to \texttt{epochs}.}
+      \end{figure}
+
+      \begin{minipage}{5.5cm}
+        \begin{itemize}
+        \item Centralized Test Accuracy: 
+        \end{itemize}
+      \end{minipage}
+
+    \end{column}
+    
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Federated Training AUC}
+      \begin{figure}
+        \centering
+        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
+        \rule{5cm}{3.5cm} 
+        \caption{Train FL Performance (AUC). \\ X-axis corresponds to
+          FL \texttt{rounds}.}
+      \end{figure}
+
+      \begin{minipage}{5.5cm}
+        \begin{itemize}
+        \item Federated Test Accuracy: 
+        \end{itemize}
+      \end{minipage}
+      
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{Results: Centralized vs. Federated Training (2)}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Centralized Training Loss}
+      \begin{figure}
+        \centering
+        \includegraphics[width=\textwidth]{media/loss_centralized.png}
+        \caption{Baseline Performance}
+      \end{figure}
+
+      \begin{minipage}{5.5cm}
+        \begin{itemize}
+        \item Centralized Test Recall: 
+        \end{itemize}
+      \end{minipage}
+
+    \end{column}
+    
+    \begin{column}{0.5\textwidth}
+      \centering
+      \textbf{Federated Training Loss}
+      \begin{figure}
+        \centering
+        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
+        \rule{5cm}{3.5cm} 
+        \caption{Distributed Performance}
+      \end{figure}
+
+      \begin{minipage}{5.5cm}
+        \begin{itemize}
+        \item Federated Test Recall: 
+        \end{itemize}
+      \end{minipage}
+      
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\section{Conclusions}
+
+\begin{frame}{Conclusions}
+  \begin{itemize}
+  \item \textbf{Synthetic data generated successfully}: To
+    equilibrate the dataset ($FID_{score} = 25$)
+
+    \vspace{0.3cm}
+    
+  \item \textbf{Built CNN with good classification accuracy}:
+    Obtained a $XX~\%$ of test accuracy.
+
+    \vspace{0.3cm}
+    
+  \item \textbf{Distributed training pipeline set up}: Using FL and
+    \texttt{FedAvg}.
+    
+    \vspace{0.3cm}
+  \item \textbf{Healthcare Extensibility:} This framework can be
+    directly adapted to other sensitive medical domains.
+    
+  \end{itemize}
+\end{frame}
+
+
+\section{Q\&A}
+
+\begin{frame}{Questions \& Answers}
+  \begin{center}
+    \vspace{1cm}
+    {\LARGE \textbf{Thank you for your attention!}}
+    
+    \vspace{1.5cm}
+    \textit{Pau Camos \& Daniel Alamillo}
+  \end{center}
+\end{frame}
+
+\end{document}
