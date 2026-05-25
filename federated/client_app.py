@@ -7,9 +7,12 @@
 
 import os, sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 import tensorflow as tf
+
+tf.config.set_visible_devices([], 'GPU')
+
 from flwr.clientapp import ClientApp
 from flwr.app import Message, Context, ArrayRecord, RecordDict, MetricRecord
 from federated.task import load_partition, load_model
@@ -36,12 +39,12 @@ def train(msg: Message, context: Context):
     local_epochs = context.run_config.get("local-epochs", 3)
 
     print(f"Client {partition_id}: training for {local_epochs} epoch(s)")
-    history = model.fit(train_ds, validation_data=val_ds, epochs=local_epochs, verbose=0)
+    history = model.fit(train_ds, validation_data=val_ds, epochs=local_epochs, verbose=1)
 
     train_loss = history.history["loss"][-1]
     train_auc = history.history["auc"][-1]
-    num_examples = sum(len(b) for b, _ in train_ds)
-    print(f"Client {partition_id}: loss={train_loss:.4f} auc={train_auc:.4f}")
+    num_examples = int(tf.data.experimental.cardinality(train_ds).numpy() * context.run_config.get("batch-size", 32))
+    print(f"Client {partition_id}: loss={train_loss:.4f} auc={train_auc:.4f} num_examples={num_examples}")
 
     content = RecordDict({
         "arrays": ArrayRecord(model.get_weights()),
@@ -66,9 +69,9 @@ def evaluate(msg: Message, context: Context):
     )
     model.set_weights(msg.content["arrays"].to_numpy_ndarrays())
 
-    results = model.evaluate(val_ds, return_dict=True, verbose=0)
-    num_examples = sum(len(b) for b, _ in val_ds)
-    print(f"Client {partition_id}: val_loss={results['loss']:.4f} val_auc={results['auc']:.4f}")
+    results = model.evaluate(val_ds, return_dict=True, verbose=1)
+    num_examples = int(tf.data.experimental.cardinality(val_ds).numpy() * context.run_config.get("batch-size", 32))
+    print(f"Client {partition_id}: val_loss={results['loss']:.4f} val_auc={results['auc']:.4f} num_examples={num_examples}")
 
     content = RecordDict({
         "metrics": MetricRecord({"eval_loss": results["loss"], "eval_auc": results["auc"],

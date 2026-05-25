@@ -37,9 +37,9 @@ clientapp = "federated.client_app:app"
 # Override any of them without touching code: flwr run . --run-config "num-server-rounds=10"
 [tool.flwr.app.config]
 num-server-rounds = 50
-fraction-train = 0.5    # fraction of available clients to sample each round
-local-epochs = 3        # epochs each client trains locally per round
-num-partitions = 2      # must match options.num-supernodes below
+fraction-train = 0.25    # fraction of available clients to sample each round
+local-epochs = 1        # epochs each client trains locally per round
+num-partitions = 4      # must match options.num-supernodes below
 
 # Simulation config — auto-migrated to ~/.flwr/config.toml on first run.
 # This ensures anyone cloning the repo gets the right number of simulated clients.

@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 import tensorflow as tf
 
-# Force CPU execution by hiding all GPUs from TensorFlow
 tf.config.set_visible_devices([], 'GPU')
 
 from data.constants import BATCH_SIZE, PREPROCESSED_IMAGE_SIZE, DATASET_OPTIONS
@@ -34,31 +33,30 @@ def load_partition(partition_id, num_partitions):
                 class_paths[cls].append(os.path.join(cls_dir, fname))
 
     # Interleave NORMAL and PNEUMONIA so each partition gets both classes
-    normal = [(p, 0.0) for p in class_paths["NORMAL"]]
-    pneumonia = [(p, 1.0) for p in class_paths["PNEUMONIA"]]
-    interleaved = [item for pair in zip(normal, pneumonia) for item in pair]
-
-    # Append leftovers from the longer class
-    longer = normal if len(normal) > len(pneumonia) else pneumonia
-    interleaved += longer[len(min(normal, pneumonia, key=len)):]
-
-    all_paths = [p for p, _ in interleaved]
-    all_labels = [l for _, l in interleaved]
-
-    total = len(all_paths)
-
-    # Split into equal chunks, one per client
-    chunk = total // num_partitions
-    start = partition_id * chunk
-    end = start + chunk if partition_id < num_partitions - 1 else total
-
-    partition_paths = all_paths[start:end]
-    partition_labels = all_labels[start:end]
+    normal_pairs = [(p, 0.0) for p in class_paths["NORMAL"]]
+    pneumonia_pairs = [(p, 1.0) for p in class_paths["PNEUMONIA"]]
+    
+    # Split normal and pneumonia paths into chunks for each partition manually
+    n_chunk = len(normal_pairs) // num_partitions
+    p_chunk = len(pneumonia_pairs) // num_partitions
+    
+    # Slice a proportional slice of both classes for this specific client partition ID
+    n_start, n_end = partition_id * n_chunk, (partition_id + 1) * n_chunk
+    p_start, p_end = partition_id * p_chunk, (partition_id + 1) * p_chunk
+    
+    # Handle the final partition's leftovers cleanly
+    if partition_id == num_partitions - 1:
+        n_end = len(normal_pairs)
+        p_end = len(pneumonia_pairs)
+        
+    partition_pairs = normal_pairs[n_start:n_end] + pneumonia_pairs[p_start:p_end]
+    partition_paths = [p for p, _ in partition_pairs]
+    partition_labels = [l for _, l in partition_pairs]
 
     if len(partition_paths) == 0:
         raise ValueError(f"Partition {partition_id} is empty. Reduce num-partitions or num-supernodes.")
 
-    print(f"Client {partition_id}: {len(partition_paths)} images (indices {start} to {end})")
+    print(f"Client {partition_id}: {len(partition_paths)} images (indices {n_start} to {n_end})")
 
     # Separate by class for stratified val split
     normal_paths  = [(p, l) for p, l in zip(partition_paths, partition_labels) if l == 0.0]

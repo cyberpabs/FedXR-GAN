@@ -12,7 +12,10 @@
 import sys, os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+import tensorflow as tf
+tf.config.set_visible_devices([], 'GPU')
 
 import csv
 from flwr.serverapp import ServerApp, Grid
