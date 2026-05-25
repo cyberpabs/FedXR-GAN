@@ -44,8 +44,7 @@
   \textbf{Core Objective:} Modern CNNs easily achieve high accuracy
   for this specific classification. The true goal is
   demonstrating a robust, end-to-end AI pipeline that overcomes
-  these systemic barriers, justifying its use in broader healthcare
-  scenarios.
+  these systemic barriers.
 \end{frame}
 
 \begin{frame}{Context: Use Case (unbalanced Chest X-Ray classification)}
@@ -93,17 +92,55 @@
   \end{itemize}
 \end{frame}
 
-
 \begin{frame}{Generative Adversarial Network (GAN) (1)}
-
-  \begin{figure}
-    \centering
-    \includegraphics[width=0.2\textwidth]{media/restore_model_image_example.png}
-    \caption{GAN generated \texttt{NORMAL} class image}
-  \end{figure}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+        \item \textbf{Data Strategy}: Augments the minority class
+          until it mathematically equilibrates with the 'PNEUMONIA'
+          class count.
+      
+      \vspace{0.6cm}
+      
+      \item \textbf{Implementation Reference}: The core architecture
+        is based on the official TensorFlow Deep Convolutional GAN
+        (DCGAN) tutorial.
+        \begin{itemize}
+        \item \url{https://www.tensorflow.org/tutorials/generative/dcgan}
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    
+    \begin{column}{0.45\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.55\textwidth]{media/compare_jitter.png}
+        \caption{Preprocessing via jitter (horizontal flip, random brightness)}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
+% \begin{frame}{Generative Adversarial Network (GAN) (1)}
+
+%   \begin{figure}
+%     \centering
+%     \includegraphics[width=0.3\textwidth]{media/compare_jitter.png}
+%     \caption{Dataset preprocessing using jitter (horizontal flipping,
+%       random brightness factor\dots)}
+%   \end{figure}
+% \end{frame}
+
 \begin{frame}{Generative Adversarial Network (GAN) (2)}
+  \begin{itemize}
+  \item \textbf{Training Cycle}: 7,000 \texttt{epochs} sampling a
+    100-dimensional noise vector.
+    
+  \item \textbf{Evaluation}: Fréchet Inception Distance (FID) computed
+    via \texttt{InceptionV3} feature extraction. (Obtained score =
+    $25$ (very accurate))
+    
+  \end{itemize}
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{figure}
@@ -124,9 +161,49 @@
 \end{frame}
 
 \begin{frame}{CNN Classifier}
+  \begin{itemize}
+  \item \textbf{Feature Extraction}: 4 sequential Convolutional blocks.
+    \begin{itemize}
+    \item \texttt{Conv2D} $\rightarrow$ \texttt{BatchNorm} $\rightarrow$ \texttt{LeakyReLU} $\rightarrow$ \texttt{MaxPool2D}.
+    \item Filter depths: 32, 64, 128, 256.
+    \end{itemize}
+    
+    \vspace{0.4cm}
+    
+  \item \textbf{Classification Head}: 
+    \begin{itemize}
+    \item \texttt{GlobalAvgPool2D} $\rightarrow$ \texttt{Dense(128)} (Dropout 0.5) $\rightarrow$ \texttt{Dense(1)}.
+    \end{itemize}
+
+    \vspace{0.4cm}
+
+  \item \textbf{Training Setup}:
+    \begin{itemize}
+    \item \textbf{Optimizer}: Adam ($lr = 3 \times 10^{-5}$) with \texttt{ReduceLROnPlateau}.
+    \item \textbf{Loss Function}: Binary Crossentropy.
+    \item \textbf{Metrics}: Accuracy, AUC, Precision, Recall, F1-Score.
+    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}{Federated Learning (FL)}
+  Executed via simulation using the following setup: 
+  \begin{itemize}
+  \item \textbf{Clients:} 4 independent nodes.
+  \item \textbf{Data Split:} Randomly distributed (25\% of the dataset per client).
+  \item \textbf{Training}
+    \begin{itemize}
+    \item \textbf{Local Execution:} 1 epoch per client per round.
+      
+    \item \textbf{Global Execution:} 50 total communication rounds
+      (equivalent to the centralized baseline).
+      
+    \item \textbf{Synchronization:} Synchronous updates (nodes wait
+      for all others to finish before starting the next round). 
+    \end{itemize}
+
+  \item \textbf{Model Aggregation Strategy:} FedAvg.
+  \end{itemize}
 \end{frame}
 
 \section{Results}
@@ -142,13 +219,6 @@
         \caption{Train Baseline Performance (AUC). \\ X-axis corresponds
           to \texttt{epochs}.}
       \end{figure}
-
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Centralized Test Accuracy: 
-        \end{itemize}
-      \end{minipage}
-
     \end{column}
     
     \begin{column}{0.5\textwidth}
@@ -156,18 +226,11 @@
       \textbf{Federated Training AUC}
       \begin{figure}
         \centering
-        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
-        \rule{5cm}{3.5cm} 
+        \includegraphics[width=\textwidth]{media/auc_federated.jpg}
         \caption{Train FL Performance (AUC). \\ X-axis corresponds to
           FL \texttt{rounds}.}
       \end{figure}
 
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Federated Test Accuracy: 
-        \end{itemize}
-      \end{minipage}
-      
     \end{column}
   \end{columns}
 \end{frame}
@@ -180,15 +243,9 @@
       \begin{figure}
         \centering
         \includegraphics[width=\textwidth]{media/loss_centralized.png}
-        \caption{Baseline Performance}
+        \caption{Train Baseline Performance (AUC). \\ X-axis corresponds
+          to \texttt{epochs}.}
       \end{figure}
-
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Centralized Test Recall: 
-        \end{itemize}
-      \end{minipage}
-
     \end{column}
     
     \begin{column}{0.5\textwidth}
@@ -196,17 +253,37 @@
       \textbf{Federated Training Loss}
       \begin{figure}
         \centering
-        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
-        \rule{5cm}{3.5cm} 
-        \caption{Distributed Performance}
+        \includegraphics[width=\textwidth]{media/loss_federated.jpg}
+        \caption{Train FL Performance (Loss). \\ X-axis corresponds to
+          FL \texttt{rounds}.}
       \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
 
-      \begin{minipage}{5.5cm}
+\begin{frame}{Results: Centralized vs. Federated Training (3)}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item \textbf{Centralized:}
+
         \begin{itemize}
-        \item Federated Test Recall: 
+        \item Centralized Test Accuracy: 83.7\%
+        \item Centralized Test AUC: 77\%
+        \item Centralized Test Recall: 93\%
         \end{itemize}
-      \end{minipage}
-      
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item \textbf{Federated:}
+        \begin{itemize}
+        \item Federated Test Accuracy: 81\%
+        \item Federated Test AUC: 90\%
+        \item Federated Test Recall: 92\%
+        \end{itemize}
+      \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
@@ -220,13 +297,13 @@
 
     \vspace{0.3cm}
     
-  \item \textbf{Built CNN with good classification accuracy}:
-    Obtained a $XX~\%$ of test accuracy.
+  \item \textbf{Built CNN with good classification metrics}: That
+    solves the main use case.
 
     \vspace{0.3cm}
     
-  \item \textbf{Distributed training pipeline set up}: Using FL and
-    \texttt{FedAvg}.
+  \item \textbf{Distributed training pipeline set up}: Giving the same
+    or better results.
     
     \vspace{0.3cm}
   \item \textbf{Healthcare Extensibility:} This framework can be
