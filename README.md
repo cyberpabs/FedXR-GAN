@@ -38,15 +38,12 @@ The objective is to investigate whether synthetic GAN-generated chest X-rays can
 
 ```bash
 FedXR-GAN/
-├── doc/                 # Latex files and PDF render
 ├── data/                # Dataset and preprocessing
-├── gan/                 # GAN architectures and training
+├── doc/                 # Latex files and PDF render
 ├── federated/           # Federated Learning pipeline
+├── gan/                 # GAN architectures and training
 ├── models/              # CNN classification models
-├── notebooks/           # Experiments and analysis
-├── results/             # Metrics, plots and outputs
-├── checkpoints/         # Saved GAN/CNN weights
-└── README.md
+└── results/             # Metrics, plots and outputs
 ```
 
 ---
@@ -57,10 +54,10 @@ FedXR-GAN/
 
 | Area | Technologies |
 |---|---|
-| Deep Learning | TensorFlow / PyTorch |
+| Deep Learning | TensorFlow |
 | Federated Learning | Flower |
 | Image Generation | DCGAN |
-| Medical Imaging | Chest X-Rays |
+| Dataset | [Chest X-Ray Images (Pneumonia)](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) |
 | Evaluation | FID, Accuracy, F1 |
 
 </div>
