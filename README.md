@@ -70,7 +70,7 @@ FedXR-GAN/
 ## Setup
 After cloning, run once to configure the local simulation:
 ```bash
-bash federated/setup_simulation.sh
+bash federated/script.sh
 ```
 
 ---
