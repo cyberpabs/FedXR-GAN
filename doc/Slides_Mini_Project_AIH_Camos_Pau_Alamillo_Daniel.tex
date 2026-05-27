@@ -3,7 +3,7 @@
 
 % --- Presentation Meta Data ---
 \title{Federated Learning for Pneumonia Classification using GAN-Augmented Chest X-Rays}
-\author{Pau Camos \& Daniel Alamillo}
+\author{Pau Camós \& Daniel Alamillo}
 \institute{Universitat Politècnica de Catalunya}
 \date{Mini Project Proposal Defense}
 
@@ -15,6 +15,8 @@
 
 \usepackage{caption}
 \captionsetup{justification=centering}
+\usepackage{tikz}
+\usetikzlibrary{positioning, fit, calc, arrows.meta, backgrounds}
 
 \begin{document}
 
@@ -44,8 +46,7 @@
   \textbf{Core Objective:} Modern CNNs easily achieve high accuracy
   for this specific classification. The true goal is
   demonstrating a robust, end-to-end AI pipeline that overcomes
-  these systemic barriers, justifying its use in broader healthcare
-  scenarios.
+  these systemic barriers.
 \end{frame}
 
 \begin{frame}{Context: Use Case (unbalanced Chest X-Ray classification)}
@@ -93,17 +94,118 @@
   \end{itemize}
 \end{frame}
 
-
 \begin{frame}{Generative Adversarial Network (GAN) (1)}
-
-  \begin{figure}
-    \centering
-    \includegraphics[width=0.2\textwidth]{media/restore_model_image_example.png}
-    \caption{GAN generated \texttt{NORMAL} class image}
-  \end{figure}
+  \begin{columns}
+    \begin{column}{0.55\textwidth}
+      \begin{itemize}
+      \item \textbf{Data Strategy}: Augments the minority class
+        until it mathematically equilibrates with the 'PNEUMONIA'
+        class count.
+        
+        \vspace{0.6cm}
+        
+      \item \textbf{Implementation Reference}: The core architecture
+        is based on the official TensorFlow Deep Convolutional GAN
+        (DCGAN) tutorial.
+        \begin{itemize}
+        \item \url{https://www.tensorflow.org/tutorials/generative/dcgan}
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    
+    \begin{column}{0.45\textwidth}
+      \begin{figure}
+        \centering
+        \includegraphics[width=0.55\textwidth]{media/compare_jitter.png}
+        \caption{Preprocessing via jitter (horizontal flip, random brightness)}
+      \end{figure}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Generative Adversarial Network (GAN) (2)}
+\begin{figure}[ht!]
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}[
+        font=\sffamily,
+        >=Latex,
+        node distance=0.5cm,
+        % Styles
+        layer/.style={draw, rounded corners, fill=blue!5, minimum width=1.6cm, minimum height=1cm, font=\scriptsize\sffamily, thick, align=center},
+        dim/.style={color=red!80!black, font=\scriptsize\bfseries, yshift=-8pt},
+        title/.style={font=\normalsize\bfseries, yshift=15pt}
+      ]
+
+      % --- GENERATOR NETWORK ---
+      \node[layer, fill=gray!20, minimum height=1.8cm] (noise) {Noise \\ $100$};
+      \node[layer, right=0.6cm of noise] (g1) {Dense + \\ Reshape};
+      \node[layer, right=0.5cm of g1] (g2) {Conv2DTr \\ (1x1 stride)};
+      \node[layer, right=0.5cm of g2] (g3) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.5cm of g3] (g4) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.5cm of g4] (g5) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.5cm of g5] (g6) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, draw=green!60!black, fill=green!5, right=0.5cm of g6] (g7) {Conv2DTr \\ (tanh)};
+
+      % Generator Dimensions
+      \node[dim, below=0pt of noise] {$100 \times 1$};
+      \node[dim, below=0pt of g1] {$8 \times 8 \times 256$};
+      \node[dim, below=0pt of g2] {$8 \times 8 \times 128$};
+      \node[dim, below=0pt of g3] {$16 \times 16 \times 64$};
+      \node[dim, below=0pt of g4] {$32 \times 32 \times 32$};
+      \node[dim, below=0pt of g5] {$64 \times 64 \times 16$};
+      \node[dim, below=0pt of g6] {$128 \times 128 \times 8$};
+      \node[dim, below=0pt of g7] {$128 \times 128 \times 1$};
+
+      % Generator Arrows
+      \foreach \i/\j in {noise/g1, g1/g2, g2/g3, g3/g4, g4/g5, g5/g6, g6/g7} {
+        \draw[->, thick] (\i) -- (\j);
+      }
+
+      \node[title, above=0.2cm of g3] {Generator Network};
+
+
+      % --- DISCRIMINATOR NETWORK ---
+      \node[layer, draw=green!60!black, fill=green!5, minimum height=1.8cm, below=1.5cm of noise] (img) {Image};
+      \node[layer, right=0.6cm of img] (d1) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.5cm of d1] (d2) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.5cm of d2] (d3) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.5cm of d3] (d4) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.5cm of d4] (d5) {Flatten + \\ Dense};
+      \node[layer, draw=red!70!black, fill=red!5, right=0.5cm of d5] (out) {Real/Fake \\ Score};
+
+      % Discriminator Dimensions
+      \node[dim, below=0pt of img] {$128 \times 128 \times 1$};
+      \node[dim, below=0pt of d1] {$64 \times 64 \times 64$};
+      \node[dim, below=0pt of d2] {$32 \times 32 \times 128$};
+      \node[dim, below=0pt of d3] {$16 \times 16 \times 256$};
+      \node[dim, below=0pt of d4] {$8 \times 8 \times 512$};
+      \node[dim, below=0pt of d5] {$1 \times 1$};
+      \node[dim, below=0pt of out] {Scalar};
+
+      % Discriminator Arrows
+      \foreach \i/\j in {img/d1, d1/d2, d2/d3, d3/d4, d4/d5, d5/out} {
+        \draw[->, thick] (\i) -- (\j);
+      }
+
+      \node[title, above=0.2cm of d3] {Discriminator Network};
+
+      \end{tikzpicture}
+    }
+    \caption{DCGAN Architecture: The Generator maps latent space noise to $128 \times 128$ X-Ray scans, while the Discriminator evaluates realism via downsampling.}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Generative Adversarial Network (GAN) (3)}
+  \begin{itemize}
+  \item \textbf{Training Cycle}: 7,000 \texttt{epochs} sampling a
+    100-dimensional noise vector.
+    
+  \item \textbf{Evaluation}: Fréchet Inception Distance (FID) computed
+    via \texttt{InceptionV3} feature extraction. (Obtained score =
+    $25$ (very accurate))
+    
+  \end{itemize}
   \begin{columns}
     \begin{column}{0.5\textwidth}
       \begin{figure}
@@ -123,10 +225,172 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}{CNN Classifier}
+\begin{frame}{CNN Classifier (1)}
+  \begin{itemize}
+  \item \textbf{Feature Extraction}: 4 sequential Convolutional blocks.
+    \begin{itemize}
+    \item \texttt{Conv2D} $\rightarrow$ \texttt{BatchNorm} $\rightarrow$ \texttt{LeakyReLU} $\rightarrow$ \texttt{MaxPool2D}.
+    \item Filter depths: 32, 64, 128, 256.
+    \end{itemize}
+    
+    \vspace{0.4cm}
+    
+  \item \textbf{Classification Head}: 
+    \begin{itemize}
+    \item \texttt{GlobalAvgPool2D} $\rightarrow$ \texttt{Dense(128)} (Dropout 0.5) $\rightarrow$ \texttt{Dense(1)}.
+    \end{itemize}
+
+    \vspace{0.4cm}
+
+  \item \textbf{Training Setup}:
+    \begin{itemize}
+    \item \textbf{Optimizer}: Adam ($lr = 3 \times 10^{-5}$) with \texttt{ReduceLROnPlateau}.
+    \item \textbf{Loss Function}: Binary Crossentropy.
+    \item \textbf{Metrics}: Accuracy, AUC, Precision, Recall, F1-Score.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{CNN Classifier (2)}
+  \begin{figure}[ht!]
+    \centering
+    \resizebox{\textwidth}{!}{
+      \begin{tikzpicture}[
+        font=\sffamily,
+        >=Latex,
+        node distance=0.4cm,
+        % Styles for internal layers
+        layer/.style={draw, fill=white, minimum width=2.2cm, minimum height=0.6cm, font=\footnotesize\sffamily, thick, align=center},
+        pool/.style={draw, fill=yellow!20, minimum width=2.2cm, minimum height=0.6cm, font=\footnotesize\sffamily, thick},
+        % Styles for container blocks
+        block/.style={draw, rounded corners, inner sep=0.3cm, thick, fill=blue!5},
+        blocklabel/.style={font=\bfseries\sffamily, yshift=2pt},
+        % Red dimension labels
+        dim/.style={color=red!80!black, font=\footnotesize\bfseries, yshift=-15pt}
+        ]
+
+        % --- ROW 1: CONVOLUTIONAL STAGE ---
+
+        % BLOCK 1
+        \node[layer] (c1) {3x3 Conv, 32};
+        \node[layer, dashed, below=0.15cm of c1] (bn1) {Batch Norm};
+        \node[layer, below=0.15cm of bn1] (a1) {LeakyReLU};
+        \node[pool, below=0.15cm of a1] (p1) {Max Pool};
+        \begin{scope}[on background layer]
+          \node[block, draw=blue!60, fit=(c1) (p1)] (block1) {};
+        \end{scope}
+        \node[blocklabel, above=0pt of block1] {Block 1};
+        \node[dim, below=0pt of block1] {$64 \times 64 \times 32$};
+
+        % INPUT NODE
+        \node[layer, fill=gray!10, minimum height=3.5cm, minimum width=1.8cm, left=1.2cm of block1] (input) {INPUT \\ $128^2 \times 1$};
+        \node[dim, below=0pt of input] {$128 \times 128 \times 1$};
+
+        % BLOCK 2
+        \node[layer, right=1.8cm of c1] (c2) {3x3 Conv, 64};
+        \node[layer, dashed, below=0.15cm of c2] (bn2) {Batch Norm};
+        \node[layer, below=0.15cm of bn2] (a2) {LeakyReLU};
+        \node[pool, below=0.15cm of a2] (p2) {Max Pool};
+        \begin{scope}[on background layer]
+          \node[block, draw=blue!60, fit=(c2) (p2)] (block2) {};
+        \end{scope}
+        \node[blocklabel, above=0pt of block2] {Block 2};
+        \node[dim, below=0pt of block2] {$32 \times 32 \times 64$};
+
+        % BLOCK 3
+        \node[layer, right=1.8cm of c2] (c3) {3x3 Conv, 128};
+        \node[layer, dashed, below=0.15cm of c3] (bn3) {Batch Norm};
+        \node[layer, below=0.15cm of bn3] (a3) {LeakyReLU};
+        \node[pool, below=0.15cm of a3] (p3) {Max Pool};
+        \begin{scope}[on background layer]
+          \node[block, draw=blue!60, fit=(c3) (p3)] (block3) {};
+        \end{scope}
+        \node[blocklabel, above=0pt of block3] {Block 3};
+        \node[dim, below=0pt of block3] {$16 \times 16 \times 128$};
+
+        % BLOCK 4
+        \node[layer, right=1.8cm of c3] (c4) {3x3 Conv, 256};
+        \node[layer, dashed, below=0.15cm of c4] (bn4) {Batch Norm};
+        \node[layer, below=0.15cm of bn4] (a4) {LeakyReLU};
+        \node[pool, below=0.15cm of a4] (p4) {Max Pool};
+        \begin{scope}[on background layer]
+          \node[block, draw=blue!60, fit=(c4) (p4)] (block4) {};
+        \end{scope}
+        \node[blocklabel, above=0pt of block4] {Block 4};
+        \node[dim, below=0pt of block4] {$8 \times 8 \times 256$};
+
+        % --- ROW 2: DENSE STAGE ---
+
+        \node[layer, fill=green!10, below=2.5cm of block1, xshift=1cm, minimum width=3.2cm] (gap) {Global Average Pool};
+        \node[dim, below=0pt of gap] {1 $\times$ 256};
+
+        \node[layer, fill=orange!10, right=0.8cm of gap] (drop1) {Dropout (0.5)};
+
+        \node[layer, fill=green!10, right=0.8cm of drop1] (dense128) {Dense (128) + ReLU};
+        \node[dim, below=0pt of dense128] {1 $\times$ 128};
+
+        \node[layer, fill=orange!10, right=0.8cm of dense128] (drop2) {Dropout (0.5)};
+
+        \node[layer, fill=red!10, right=0.8cm of drop2] (dense1) {Dense (1) + Sigmoid};
+        \node[dim, below=0pt of dense1] {1 $\times$ 1};
+
+        % Final Outputs
+        \node[layer, draw=green!60!black, fill=green!5, above right=0.1cm and 1cm of dense1] (out0) {Normal};
+        \node[layer, draw=red!70!black, fill=red!5, below right=0.1cm and 1cm of dense1] (out1) {Pneumonia};
+
+        % --- LEGEND ---
+        \node[draw, thick, rounded corners, fill=white, right=2.5cm of out0, yshift=-0.5cm, inner sep=10pt] (legend) {
+          \begin{tabular}{ll}
+            \tikz[baseline=-0.5ex]\node[block, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Conv Block \\
+            \tikz[baseline=-0.5ex]\node[layer, fill=gray!10, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Input Layer \\
+            \tikz[baseline=-0.5ex]\node[layer, fill=yellow!20, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Pooling Layer \\
+            \tikz[baseline=-0.5ex]\node[layer, fill=green!10, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Dense Layer \\
+            \tikz[baseline=-0.5ex]\node[layer, fill=orange!10, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Regularization \\
+            \tikz[baseline=-0.5ex]\node[layer, fill=red!10, minimum width=0.5cm, minimum height=0.3cm, inner sep=0pt]{}; & Output Layer \\
+            \footnotesize\textcolor{red!80!black}{\bfseries 128x128x1} & Feature Map Size
+          \end{tabular}
+        };
+
+        % --- ARROWS ---
+        \draw[->, thick] (input.east) -- (block1.west);
+        \draw[->, thick] (block1.east) -- (block2.west);
+        \draw[->, thick] (block2.east) -- (block3.west);
+        \draw[->, thick] (block3.east) -- (block4.west);
+
+        \draw[->, thick] (block4.south) .. controls +(0,-1.5) and +(0,1.5) .. (gap.north);
+
+        \draw[->, thick] (gap) -- (drop1);
+        \draw[->, thick] (drop1) -- (dense128);
+        \draw[->, thick] (dense128) -- (drop2);
+        \draw[->, thick] (drop2) -- (dense1);
+
+        \draw[->, thick] (dense1.east) -- ++(0.4,0) |- (out0.west);
+        \draw[->, thick] (dense1.east) -- ++(0.4,0) |- (out1.west);
+
+      \end{tikzpicture}
+    }
+    \caption{Modular CNN Architecture for Pneumonia Detection with Feature Map Dimensions.}
+  \end{figure}  
 \end{frame}
 
 \begin{frame}{Federated Learning (FL)}
+  Executed via simulation using the following setup: 
+  \begin{itemize}
+  \item \textbf{Clients:} 4 independent nodes.
+  \item \textbf{Data Split:} Randomly distributed (25\% of the dataset per client).
+  \item \textbf{Training}
+    \begin{itemize}
+    \item \textbf{Local Execution:} 1 epoch per client per round.
+      
+    \item \textbf{Global Execution:} 50 total communication rounds
+      (equivalent to the centralized baseline).
+      
+    \item \textbf{Synchronization:} Synchronous updates (nodes wait
+      for all others to finish before starting the next round). 
+    \end{itemize}
+
+  \item \textbf{Model Aggregation Strategy:} FedAvg.
+  \end{itemize}
 \end{frame}
 
 \section{Results}
@@ -142,13 +406,6 @@
         \caption{Train Baseline Performance (AUC). \\ X-axis corresponds
           to \texttt{epochs}.}
       \end{figure}
-
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Centralized Test Accuracy: 
-        \end{itemize}
-      \end{minipage}
-
     \end{column}
     
     \begin{column}{0.5\textwidth}
@@ -156,18 +413,11 @@
       \textbf{Federated Training AUC}
       \begin{figure}
         \centering
-        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
-        \rule{5cm}{3.5cm} 
+        \includegraphics[width=\textwidth]{media/auc_federated.jpg}
         \caption{Train FL Performance (AUC). \\ X-axis corresponds to
           FL \texttt{rounds}.}
       \end{figure}
 
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Federated Test Accuracy: 
-        \end{itemize}
-      \end{minipage}
-      
     \end{column}
   \end{columns}
 \end{frame}
@@ -180,15 +430,9 @@
       \begin{figure}
         \centering
         \includegraphics[width=\textwidth]{media/loss_centralized.png}
-        \caption{Baseline Performance}
+        \caption{Train Baseline Performance (AUC). \\ X-axis corresponds
+          to \texttt{epochs}.}
       \end{figure}
-
-      \begin{minipage}{5.5cm}
-        \begin{itemize}
-        \item Centralized Test Recall: 
-        \end{itemize}
-      \end{minipage}
-
     \end{column}
     
     \begin{column}{0.5\textwidth}
@@ -196,17 +440,37 @@
       \textbf{Federated Training Loss}
       \begin{figure}
         \centering
-        % \includegraphics[width=0.9\textwidth]{path_to_federated_image.png}
-        \rule{5cm}{3.5cm} 
-        \caption{Distributed Performance}
+        \includegraphics[width=\textwidth]{media/loss_federated.jpg}
+        \caption{Train FL Performance (Loss). \\ X-axis corresponds to
+          FL \texttt{rounds}.}
       \end{figure}
+    \end{column}
+  \end{columns}
+\end{frame}
 
-      \begin{minipage}{5.5cm}
+\begin{frame}{Results: Centralized vs. Federated Training (3)}
+  \begin{columns}
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item \textbf{Centralized:}
+
         \begin{itemize}
-        \item Federated Test Recall: 
+        \item Centralized Test Accuracy: 83.7\%
+        \item Centralized Test AUC: 77\%
+        \item Centralized Test Recall: 93\%
         \end{itemize}
-      \end{minipage}
-      
+      \end{itemize}
+    \end{column}
+
+    \begin{column}{0.5\textwidth}
+      \begin{itemize}
+      \item \textbf{Federated:}
+        \begin{itemize}
+        \item Federated Test Accuracy: 81\%
+        \item Federated Test AUC: 90\%
+        \item Federated Test Recall: 92\%
+        \end{itemize}
+      \end{itemize}
     \end{column}
   \end{columns}
 \end{frame}
@@ -220,13 +484,13 @@
 
     \vspace{0.3cm}
     
-  \item \textbf{Built CNN with good classification accuracy}:
-    Obtained a $XX~\%$ of test accuracy.
+  \item \textbf{Built CNN with good classification metrics}: That
+    solves the main use case.
 
     \vspace{0.3cm}
     
-  \item \textbf{Distributed training pipeline set up}: Using FL and
-    \texttt{FedAvg}.
+  \item \textbf{Distributed training pipeline set up}: Giving the same
+    or better results.
     
     \vspace{0.3cm}
   \item \textbf{Healthcare Extensibility:} This framework can be
@@ -244,7 +508,7 @@
     {\LARGE \textbf{Thank you for your attention!}}
     
     \vspace{1.5cm}
-    \textit{Pau Camos \& Daniel Alamillo}
+    \textit{Pau Camós \& Daniel Alamillo}
   \end{center}
 \end{frame}
 
