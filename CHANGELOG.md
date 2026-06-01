@@ -1,30 +1,39 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - 2026-05
 
-### Added — Classifier (`models/classifier.py`)
+### Added
 
-- Binary CNN classifier (NORMAL vs PNEUMONIA) with 4 convolutional blocks (32→64→128→256 filters), GlobalAveragePooling, and two Dropout(0.5) layers
-- 80/20 train/val split from the train directory (`seed=42`) replacing the original 16-image val folder
-- Training augmentation: random horizontal flip + random brightness on train split only
-- Callbacks: `ModelCheckpoint` (best val_auc), `ReduceLROnPlateau` (factor=0.5, patience=3), `EarlyStopping` (patience=8)
-- Threshold sweep at evaluation time (0.10→0.90, step 0.05) printing accuracy, precision, recall, F1 per threshold
-- `--evaluate-only <path>` CLI flag to evaluate a saved model without retraining
-- Timestamped model saves (`classifier_model_YYYYMMDD_HHMMSS.keras`) and training curve plots to avoid overwriting previous experiments
-- `load_and_wrap_model` utility to recompile a saved model for evaluation
+#### GAN
+- `gan/model.py`: DCGAN with configurable generator/discriminator filter banks for 64×64 and 128×128 output sizes
+- `gan/main.py`: entry point for dataset download, preprocessing, and DCGAN training
+- `gan/constants.py`: shared GAN hyperparameters (`NOISE_DIM=100`, `EPOCHS=7000`, checkpoint dir)
+- `gan/equilibrate_normal.py`: generates synthetic NORMAL X-rays until class count matches PNEUMONIA
+- `gan/calculate_fid_score.py`: FID evaluation via InceptionV3 feature extraction (score: 25.37)
+- `gan/restore_model.py`: loads a saved generator checkpoint and generates a sample image
 
-### Fixed
+#### Data
+- `data/constants.py`: dataset paths, image size (128×128), batch size, and buffer size constants
+- `data/dataset_download.py`: Kaggle dataset downloader with progress bar and zip extraction
+- `data/dataset_preprocessing.py`: image preprocessing pipeline (resize, normalize to [-1,1], jitter augmentation)
 
-- Preprocessing mismatch: test set was being passed as raw `[0, 255]` pixels to a model trained on `[-1, 1]`; `load_test` now consistently applies `/127.5 - 1.0` normalization
-- Noisy validation caused by the dataset's official 16-image `val/` folder; replaced with a proper 80/20 split
-- Learning rate `1e-4` caused val loss spikes at early epochs; reduced to `3e-5`
-- Dropout too low (0.4/0.3) causing train loss to collapse to ~0 while val remained high; increased to 0.5/0.5
+#### Classifier
+- `models/classifier.py`: 4-block CNN (Conv2D → BatchNorm → LeakyReLU → MaxPool) with GlobalAvgPool + Dense head; includes training, evaluation, threshold sweep, and checkpoint callbacks
+
+#### Federated Learning
+- `federated/task.py`: stratified per-client data partitioning with class interleaving and stratified val split
+- `federated/client_app.py`: Flower ClientApp with `@train` and `@evaluate` handlers
+- `federated/server_app.py`: Flower ServerApp with FedAvg, per-round CSV metrics logging
+- `federated/evaluate_saved_model.py`: standalone evaluation script for the final federated model
+- `federated/plot_metrics.py`: plots federated training curves (loss + AUC) from CSV
+- `federated/script.sh`: configures `num-supernodes` in `~/.flwr/config.toml` on fresh clone
+- `pyproject.toml`: Flower app config with FedAvg hyperparameters (50 rounds, 4 partitions, 1 local epoch)
+
+#### Results
+- `results/federated_metrics.csv`: per-round federated training metrics (50 rounds)
+- `fid_score_results.txt`: FID score output from InceptionV3 evaluation
 
 ### Environment
-
-- Fixed GPU detection under WSL2: `pip install "tensorflow[and-cuda]==2.19.0"` required for TF's internal CUDA plugin loader to find cuDNN/cuBLAS
-- Pinned TensorFlow to 2.19.0 in `requirements.txt`
-
-### Results
-
-- Test accuracy: 83.65% | AUC: 0.7667 | F1: 0.8768 (threshold=0.90) | Recall: 0.9308
+- Requires `pip install "tensorflow[and-cuda]==2.19.0"` for GPU support under WSL2
+- Run `bash federated/setup_simulation.sh` after cloning before `flwr run . local-simulation --stream`
+- Flower 1.30.0 migrates federation config from `pyproject.toml` to `~/.flwr/config.toml` on first run

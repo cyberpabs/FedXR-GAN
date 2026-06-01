@@ -1,0 +1,66 @@
+# pyproject.toml
+# Flower app configuration. Tells flwr run which server and client to use,
+# and sets the hyperparameters that both read from context.run_config.
+#
+# References:
+# https://flower.ai/docs/framework/how-to-configure-pyproject-toml.html
+# https://flower.ai/docs/framework/ref-api-cli.html#flwr-run
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "fedxr-gan"
+version = "1.0.0"
+description = "Federated Learning for Pneumonia Classification using GAN-Augmented Chest X-Rays"
+license = "Apache-2.0"
+dependencies = [
+    "flwr[simulation]>=1.29.0",
+    "tensorflow[and-cuda]==2.19.0",
+    "numpy>=2.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[tool.flwr.app]
+publisher = "cyberpabs"
+
+# Points flwr to the ServerApp and ClientApp objects inside our modules.
+# Format is "module.path:object_name"
+[tool.flwr.app.components]
+serverapp = "federated.server_app:app"
+clientapp = "federated.client_app:app"
+
+# These values are read at runtime via context.run_config in server and client.
+# Override any of them without touching code: flwr run . --run-config "num-server-rounds=10"
+[tool.flwr.app.config]
+num-server-rounds = 50
+fraction-train = 0.25    # fraction of available clients to sample each round
+local-epochs = 1        # epochs each client trains locally per round
+num-partitions = 4      # must match options.num-supernodes below
+
+# Simulation config — auto-migrated to ~/.flwr/config.toml on first run.
+# This ensures anyone cloning the repo gets the right number of simulated clients.
+
+#######################################################################
+# CONFIGURATION MIGRATION NOTICE:
+#
+# What was previously called "federation config" for SuperLink
+# connections in pyproject.toml has been renamed and moved.
+#
+# These settings are now **SuperLink connection configuration**
+# and are defined in the Flower configuration file.
+#
+# The entries below are commented out intentionally and are kept
+# only as a migration reference.
+#
+# Docs: https://flower.ai/docs/framework/ref-flower-configuration.html
+#######################################################################
+
+# [tool.flwr.federations]
+# default = "local-simulation"
+
+# [tool.flwr.federations.local-simulation]
+# options.num-supernodes = 2
