@@ -1,9 +1,9 @@
 \section{Introduction}
 
-The use of Artificial Intelligence (AI) into healthcare environment
-presents a exceptional opportunities to optimize processes, improve
-the diagnosis precision and leverage healthcare staff from executing
-repetivive tasks to provide a better treat to patients. Unlike other
+The use of Artificial Intelligence (AI) in healthcare environment
+presents exceptional opportunities to optimize processes, improve
+diagnosis precision and relieve healthcare staff from executing
+repetitive tasks to provide a better treatment to patients. Unlike other
 machine learning applications, medical data cannot be easily
 centralized for training models, as strict privacy policies are
 imposed to protect the patient. Furthermore, clinical information is
@@ -11,7 +11,7 @@ inherently distributed across multiple distinct hospitals and
 organizations, and the datasets themselves are frequently unbalanced
 due to the scarcity of specific diagnostic classes or rare diseases.
 
-This mini-project illustrates the core challenges and proposes a
+This mini-project illustrates these core challenges and proposes a
 modular, end-to-end AI pipeline designed to overcome them. To validate
 the architecture, we selected the binary classification of Chest
 X-Rays (Pneumonia vs. Normal). While modern Convolutional Neural
@@ -25,9 +25,17 @@ navigates privacy, distribution, and data scarcity. To achieve this,
 the proposed system architecture leverages three distinct
 techniques: 
 \begin{itemize}
-\item \textbf{Generative Adversarial Networks (GAN):}
-\item \textbf{Convolutional Neural Networks (CNN):}
-\item \textbf{Federated Learning (FL)}: 
+\item \textbf{Generative Adversarial Networks (GAN):} A Deep
+  Convolutional GAN (DCGAN) is implemented to generate realistic
+  synthetic images and augment the minority class ('NORMAL' class in
+  our use case).
+  
+\item \textbf{Convolutional Neural Networks (CNN):} Performs the
+  binary diagnostic classification (Pneumonia vs. Normal).
+  
+\item \textbf{Federated Learning (FL)}: Enables model training across
+  simulated hospital clients without pooling data. Only model weights
+  are shared centrally via \texttt{FedAvg}, keeping raw data local.
 \end{itemize}
 
 The report is organized as follows: Section II
