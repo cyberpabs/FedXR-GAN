@@ -23,7 +23,19 @@
 \maketitle
 
 \begin{abstract}
-  % Insert your abstract text here
+  AI-driven solutions face several challenges when applied to the
+  healthcare field. Strict data privacy regulations, the lack of
+  a unified data source, and the unbalanced nature of medical
+  datasets (which underrepresent some diagnostic classes) are primary
+  barriers. This report presents a framework that tackles these issues
+  by applying GAN-based dataset augmentation, combined with a Federated
+  Learning (FL) pipeline, to train a CNN to classify pneumonia in
+  Chest X-Rays. This specific use case was selected for its simplicity,
+  as the main goal of the project is to illustrate the viability of the
+  end-to-end distributed framework. Results indicate the framework
+  successfully equilibrates the dataset and maintains robust diagnostic
+  performance, achieving a Federated Test AUC of 90\% without
+  centralizing sensitive raw data.
 \end{abstract}
 
 \input{002-intro}
