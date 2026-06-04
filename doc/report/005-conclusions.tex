@@ -2,9 +2,20 @@
 \section{Conclusions}
 \label{sec:conclusions}
 
-This project shows that a practical pipeline for pneumonia classification can be built from two complementary components. First a DCGAN \cite{Radford2015DCGAN} was trained to augment the minority `NORMAL` class. The generated set reduced class imbalance and achieved a measured FID around 25 \cite{Heusel2017FID} which indicates reasonable visual fidelity for downstream use.
+This project shows that a practical pipeline for pneumonia
+classification can be built from two complementary components. First a
+DCGAN \cite{Radford2015DCGAN} was trained to augment the minority
+\texttt{NORMAL} class. The generated set reduced class imbalance and
+achieved a measured FID around 25 \cite{Heusel2017FID} which indicates
+reasonable visual fidelity for downstream use.
 
-Second a compact CNN classifier trained in a federated setup \cite{McMahan2017FedAvg} reached high discrimination on the evaluation set. Over 50 communication rounds the evaluation AUC stabilized near 0.99 and the evaluation loss reached values near 0.11. These results demonstrate that federated training can match centralized performance while keeping data local to simulated clients.
+Second a compact CNN classifier trained in a federated setup
+\cite{McMahan2017FedAvg} reached high discrimination on the evaluation
+set. Over 50 communication rounds the evaluation AUC stabilized near
+0.99 and the evaluation loss reached values near 0.11. These results
+demonstrate that federated training can match centralized performance
+while keeping data local to simulated clients in IID data split
+scenarios. 
 
 Taken together the GAN augmentation and the federated CNN form a practical approach for sensitive medical imaging tasks. The pipeline improves data availability and preserves privacy while delivering strong classification metrics. At the same time there remain clear directions for improvement. The FID can be lowered by longer GAN training and richer data augmentation. The classifier would benefit from additional cross site validation and adversarial robustness checks. Finally real world deployment requires formal privacy auditing and fairness analysis across demographic groups.
 

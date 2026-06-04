@@ -1,7 +1,13 @@
 \subsection{CNN Classifier Architecture}
 \label{sec:cnn_architecture}
 
-The CNN takes $128\times128$ grayscale chest X-rays and classifies them as pneumonia or normal. Its design is inspired by VGG-style~\cite{Simonyan15} networks, using four convolutional blocks with $3\times3$ convolutions, batch normalization, LeakyReLU, and max pooling. The number of filters doubles after each block from 32 up to 256. This structure lets the model learn from simple to more complex image features.
+The CNN takes $128\times128$ grayscale chest X-rays and classifies
+them as pneumonia or normal. Its design is inspired by
+VGG-style~\cite{Simonyan15} networks, using four convolutional blocks
+with $3\times3$ convolutions, batch normalization, LeakyReLU, and max
+pooling. The number of filters doubles after each block from 32 up to
+256. This structure lets the model learn from simple to more complex
+image features.
 
 \begin{figure}[!htbp]
   \centering
@@ -126,4 +132,16 @@ After the convolutional blocks, the model uses global average pooling to turn th
   \label{fig:cnn_head}
 \end{figure}
 
-Model optimization is driven by the Adam optimizer initialized with a conservative learning rate of $3 \times 10^{-5}$ to ensure steady convergence across the loss surface. Given the binary structure of the objective function, training leverages a Binary Cross-Entropy loss mechanism, complemented by a \texttt{ReduceLROnPlateau} scheduling policy designed to dynamically downgrade the learning rate whenever validation loss plateaus. Because the source medical imaging data exhibits an uneven class distribution, evaluation protocols look past baseline accuracy alone. Instead, model stability and generalization are contextualized comprehensively through Area Under the ROC Curve (AUC), Precision, Recall, and F1-Score metrics to guarantee performance validity under distinct class imbalances.
+Model optimization is driven by the Adam optimizer initialized with a
+conservative learning rate of $3 \times 10^{-5}$ to ensure steady
+convergence across the loss surface. Given the binary structure of the
+objective function, training leverages a Binary Cross-Entropy loss
+mechanism, complemented by a \texttt{ReduceLROnPlateau} scheduling
+policy designed to dynamically downgrade the learning rate whenever
+validation loss plateaus. The centralized baseline model was trained 
+for a total of 50 epochs. Because the source medical imaging data
+exhibits an uneven class distribution, evaluation protocols look past
+baseline accuracy alone. Instead, model stability and generalization
+are contextualized comprehensively through Area Under the ROC Curve
+(AUC), Precision, Recall, and F1-Score metrics to guarantee
+performance validity under distinct class imbalances.
