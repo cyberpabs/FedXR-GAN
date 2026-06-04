@@ -1,0 +1,33 @@
+\subsection{Federated Learning Pipeline}
+\label{sec:fl_architecture}
+
+The Federated Learning pipeline enables collaborative model training
+across multiple nodes without sharing their raw data, 
+ensuring data privacy and distributing the computational
+load. The pipeline was implemented using the \textit{Flower} framework
+\cite{Beuteletal2020} and its \textit{Virtual Client Engine (VCE)},
+which enables experimentation with multiple federation setups. In this
+mini-project, the simulation setup was configured as follows:
+
+\begin{itemize}
+\item \textbf{Clients:} 4 independent nodes.
+\item \textbf{Data split:} Randomly distributed (Independent and Identically
+  Distributed (IID), 25\% of the dataset per client).
+\item \textbf{Training:}
+  \begin{itemize}
+  \item \textbf{Local Execution:} 1 epoch per client per round.
+  \item \textbf{Global Execution:} 50 total communication rounds
+    (equivalent to the centralized baseline epochs).
+  \item \textbf{Synchronization:} Synchronous updates (nodes wait for
+    all others to finish before starting the next round).
+  \end{itemize}
+
+ \item \textbf{Model Aggregation Strategy:} \texttt{FedAvg}
+\end{itemize}
+
+A single local execution epoch was configured to avoid local model
+overfitting, which commonly occurs when a high number of local epochs are
+executed within the federation. This ensures that one federation round is
+equivalent to one centralized epoch in terms of data passes through
+the model. The standard \texttt{FedAvg} aggregation algorithm was used
+to perform the global model weights update.
