@@ -1,0 +1,107 @@
+\subsection{DCGAN Synthetic Dataset Generation}
+\label{sec:dcgan_architecture}
+
+A standard DCGAN architecture \cite{Radford2015DCGAN} was used to
+equilibrate the dataset, augmenting the samples of the \texttt{NORMAL}
+minority class.
+
+The DCGAN architecture is composed of two adversarial neural networks:
+\begin{itemize}
+\item \textbf{Generator:} The network samples a 100-dimensional
+  latent noise vector ($100 \times 1$) and processes it through a
+  Dense layer and a Reshape operation to form an initial $8 \times
+  8 \times 256$ feature map. This is followed by a sequence of
+  \texttt{Conv2DTranspose} layers with fractional strides to
+  upsample the feature maps to $128 \times 128 \times 1$. Batch
+  Normalization and \texttt{LeakyReLU} activations are applied
+  after each transposed convolution, concluding with a
+  \texttt{tanh} activation function for the final image
+  generation.
+  
+\item \textbf{Discriminator:} The discriminator evaluates the
+  realism of the input images ($128 \times 128 \times 1$). It
+  utilizes a series of standard \texttt{Conv2D} downsampling
+  layers (filter depths of 64, 128, 256, and 512), coupled with
+  \texttt{LeakyReLU} activations and Dropout regularization (rate
+  of 0.3). The final layer is flattened and mapped to a single
+  Dense unit that outputs a scalar real/fake score.      
+\end{itemize}
+
+\begin{figure}[ht!]
+    \centering
+    \resizebox{\columnwidth}{!}{
+      \begin{tikzpicture}[
+        font=\sffamily,
+        >=Latex,
+        node distance=0.2cm,
+        % Styles
+        layer/.style={draw, rounded corners, fill=blue!5, minimum width=1.4cm, minimum height=1cm, font=\scriptsize\sffamily, thick, align=center},
+        dim/.style={color=red!80!black, font=\scriptsize\bfseries, yshift=-8pt},
+        title/.style={font=\normalsize\bfseries, yshift=15pt}
+      ]
+
+      % --- GENERATOR NETWORK ---
+      \node[layer, fill=gray!20, minimum height=1.8cm] (noise) {Noise \\ $100$};
+      \node[layer, right=0.3cm of noise] (g1) {Dense + \\ Reshape};
+      \node[layer, right=0.2cm of g1] (g2) {Conv2DTr \\ (1x1 stride)};
+      \node[layer, right=0.2cm of g2] (g3) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.2cm of g3] (g4) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.2cm of g4] (g5) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, right=0.2cm of g5] (g6) {Conv2DTr \\ (2x2 stride)};
+      \node[layer, draw=green!60!black, fill=green!5, right=0.2cm of g6] (g7) {Conv2DTr \\ (tanh)};
+
+      % Generator Dimensions
+      \node[dim, below=0pt of noise] {$100 \times 1$};
+      \node[dim, below=0pt of g1] {$8 \times 8 \times 256$};
+      \node[dim, below=0pt of g2] {$8 \times 8 \times 128$};
+      \node[dim, below=0pt of g3] {$16 \times 16 \times 64$};
+      \node[dim, below=0pt of g4] {$32 \times 32 \times 32$};
+      \node[dim, below=0pt of g5] {$64 \times 64 \times 16$};
+      \node[dim, below=0pt of g6] {$128 \times 128 \times 8$};
+      \node[dim, below=0pt of g7] {$128 \times 128 \times 1$};
+
+      % Generator Arrows
+      \foreach \i/\j in {noise/g1, g1/g2, g2/g3, g3/g4, g4/g5, g5/g6, g6/g7} {
+        \draw[->, thick] (\i) -- (\j);
+      }
+
+      \node[title, above=0.2cm of g3] {Generator Network};
+
+
+      % --- DISCRIMINATOR NETWORK ---
+      \node[layer, draw=green!60!black, fill=green!5, minimum height=1.8cm, below=1.5cm of noise] (img) {Image};
+      \node[layer, right=0.3cm of img] (d1) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.2cm of d1] (d2) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.2cm of d2] (d3) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.2cm of d3] (d4) {Conv2D \\ (2x2 stride)};
+      \node[layer, right=0.2cm of d4] (d5) {Flatten + \\ Dense};
+      \node[layer, draw=red!70!black, fill=red!5, right=0.2cm of d5] (out) {Real/Fake \\ Score};
+
+      % Discriminator Dimensions
+      \node[dim, below=0pt of img] {$128 \times 128 \times 1$};
+      \node[dim, below=0pt of d1] {$64 \times 64 \times 64$};
+      \node[dim, below=0pt of d2] {$32 \times 32 \times 128$};
+      \node[dim, below=0pt of d3] {$16 \times 16 \times 256$};
+      \node[dim, below=0pt of d4] {$8 \times 8 \times 512$};
+      \node[dim, below=0pt of d5] {$1 \times 1$};
+      \node[dim, below=0pt of out] {Scalar};
+
+      % Discriminator Arrows
+      \foreach \i/\j in {img/d1, d1/d2, d2/d3, d3/d4, d4/d5, d5/out} {
+        \draw[->, thick] (\i) -- (\j);
+      }
+
+      \node[title, above=0.2cm of d3] {Discriminator Network};
+
+      \end{tikzpicture}
+    }
+    \caption{DCGAN Architecture: The Generator maps latent space noise
+      to $128 \times 128$ X-Ray scans, while the Discriminator
+      evaluates realism via downsampling.}
+    \label{fig:dcgan_arch}
+\end{figure}
+
+The model architecture is illustrated in the
+Figure~\ref{fig:dcgan_arch}. Both networks were compiled using Binary
+Crossentropy loss and trained using Adam optimizers with a learning
+rate of $10^{-4}$. The training cycle was executed over 7,000 epochs.
