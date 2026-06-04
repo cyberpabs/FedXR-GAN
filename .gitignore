@@ -1,10 +1,10 @@
 # Report stuff
-_report/*
-!_report/
-!_report/main.tex
-!_report/main.pdf
-!_report/sample.bib
-!_report/media
+doc/*
+!doc/
+!doc/main.tex
+!doc/main.pdf
+!doc/sample.bib
+!doc/media
 
 # Misc
 __pycache__

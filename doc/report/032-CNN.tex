@@ -1,0 +1,129 @@
+\subsection{CNN Classifier Architecture}
+\label{sec:cnn_architecture}
+
+The CNN takes $128\times128$ grayscale chest X-rays and classifies them as pneumonia or normal. Its design is inspired by VGG-style~\cite{Simonyan15} networks, using four convolutional blocks with $3\times3$ convolutions, batch normalization, LeakyReLU, and max pooling. The number of filters doubles after each block from 32 up to 256. This structure lets the model learn from simple to more complex image features.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{\linewidth}{!}{% Scaled to single column width
+    \begin{tikzpicture}[
+      font=\sffamily,
+      >=Latex,
+      node distance=0.4cm,
+      % Styles for internal layers
+      layer/.style={draw, fill=white, minimum width=2.2cm, minimum height=0.6cm, font=\footnotesize\sffamily, thick, align=center},
+      pool/.style={draw, fill=yellow!20, minimum width=2.2cm, minimum height=0.6cm, font=\footnotesize\sffamily, thick},
+      % Styles for container blocks
+      block/.style={draw, rounded corners, inner sep=0.3cm, thick, fill=blue!5},
+      blocklabel/.style={font=\bfseries\sffamily, yshift=2pt},
+      % Red dimension labels
+      dim/.style={color=red!80!black, font=\footnotesize\bfseries, yshift=-15pt}
+      ]
+
+      % BLOCK 1
+      \node[layer] (c1) {3x3 Conv, 32};
+      \node[layer, dashed, below=0.15cm of c1] (bn1) {Batch Norm};
+      \node[layer, below=0.15cm of bn1] (a1) {LeakyReLU};
+      \node[pool, below=0.15cm of a1] (p1) {Max Pool};
+      \begin{scope}[on background layer]
+        \node[block, draw=blue!60, fit=(c1) (p1)] (block1) {};
+      \end{scope}
+      \node[blocklabel, above=0pt of block1] {Block 1};
+      \node[dim, below=0pt of block1] {$64 \times 64 \times 32$};
+
+      % INPUT NODE
+      \node[layer, fill=gray!10, minimum height=3.5cm, minimum width=1.8cm, left=1.2cm of block1] (input) {INPUT \\ $128^2 \times 1$};
+      \node[dim, below=0pt of input] {$128 \times 128 \times 1$};
+
+      % BLOCK 2
+      \node[layer, right=1.8cm of c1] (c2) {3x3 Conv, 64};
+      \node[layer, dashed, below=0.15cm of c2] (bn2) {Batch Norm};
+      \node[layer, below=0.15cm of bn2] (a2) {LeakyReLU};
+      \node[pool, below=0.15cm of a2] (p2) {Max Pool};
+      \begin{scope}[on background layer]
+        \node[block, draw=blue!60, fit=(c2) (p2)] (block2) {};
+      \end{scope}
+      \node[blocklabel, above=0pt of block2] {Block 2};
+      \node[dim, below=0pt of block2] {$32 \times 32 \times 64$};
+
+      % BLOCK 3
+      \node[layer, right=1.8cm of c2] (c3) {3x3 Conv, 128};
+      \node[layer, dashed, below=0.15cm of c3] (bn3) {Batch Norm};
+      \node[layer, below=0.15cm of bn3] (a3) {LeakyReLU};
+      \node[pool, below=0.15cm of a3] (p3) {Max Pool};
+      \begin{scope}[on background layer]
+        \node[block, draw=blue!60, fit=(c3) (p3)] (block3) {};
+      \end{scope}
+      \node[blocklabel, above=0pt of block3] {Block 3};
+      \node[dim, below=0pt of block3] {$16 \times 16 \times 128$};
+
+      % BLOCK 4
+      \node[layer, right=1.8cm of c3] (c4) {3x3 Conv, 256};
+      \node[layer, dashed, below=0.15cm of c4] (bn4) {Batch Norm};
+      \node[layer, below=0.15cm of bn4] (a4) {LeakyReLU};
+      \node[pool, below=0.15cm of a4] (p4) {Max Pool};
+      \begin{scope}[on background layer]
+        \node[block, draw=blue!60, fit=(c4) (p4)] (block4) {};
+      \end{scope}
+      \node[blocklabel, above=0pt of block4] {Block 4};
+      \node[dim, below=0pt of block4] {$8 \times 8 \times 256$};
+
+      % --- ARROWS ---
+      \draw[->, thick] (input.east) -- (block1.west);
+      \draw[->, thick] (block1.east) -- (block2.west);
+      \draw[->, thick] (block2.east) -- (block3.west);
+      \draw[->, thick] (block3.east) -- (block4.west);
+
+    \end{tikzpicture}
+  }
+  \caption{Feature extraction backbone of the CNN Architecture.}
+  \label{fig:cnn_backbone}
+\end{figure}
+
+After the convolutional blocks, the model uses global average pooling to turn the feature maps into a 256-element vector, as shown in Figure~\ref{fig:cnn_head}. This keeps the classification head smaller than a flat dense layer would. The vector goes through a dense layer with 128 units and ReLU, then dropout at 0.5. The final output is a single sigmoid neuron that gives the pneumonia probability.
+
+\begin{figure}[!htbp]
+  \centering
+  \resizebox{\linewidth}{!}{% Scaled to single column width
+    \begin{tikzpicture}[
+      font=\sffamily,
+      >=Latex,
+      node distance=0.4cm,
+      layer/.style={draw, fill=white, minimum width=2.2cm, minimum height=0.6cm, font=\footnotesize\sffamily, thick, align=center},
+      dim/.style={color=red!80!black, font=\footnotesize\bfseries, yshift=-15pt}
+      ]
+
+      % DENSE STAGE
+      \node[layer, fill=green!10, minimum width=3.2cm] (gap) {Global Average\\Pool};
+      \node[dim, below=0pt of gap] {1 $\times$ 256};
+
+      \node[layer, fill=orange!10, right=0.8cm of gap] (drop1) {Dropout\\(0.5)};
+
+      \node[layer, fill=green!10, right=0.8cm of drop1] (dense128) {Dense (128)\\+ ReLU};
+      \node[dim, below=0pt of dense128] {1 $\times$ 128};
+
+      \node[layer, fill=orange!10, right=0.8cm of dense128] (drop2) {Dropout\\(0.5)};
+
+      \node[layer, fill=red!10, right=0.8cm of drop2] (dense1) {Dense (1)\\+ Sigmoid};
+      \node[dim, below=0pt of dense1] {1 $\times$ 1};
+
+      % Final Outputs
+      \node[layer, draw=green!60!black, fill=green!5, above right=0.1cm and 1cm of dense1] (out0) {Normal};
+      \node[layer, draw=red!70!black, fill=red!5, below right=0.1cm and 1cm of dense1] (out1) {Pneumonia};
+
+      % --- ARROWS ---
+      \draw[->, thick] (gap) -- (drop1);
+      \draw[->, thick] (drop1) -- (dense128);
+      \draw[->, thick] (dense128) -- (drop2);
+      \draw[->, thick] (drop2) -- (dense1);
+
+      \draw[->, thick] (dense1.east) -- ++(0.4,0) |- (out0.west);
+      \draw[->, thick] (dense1.east) -- ++(0.4,0) |- (out1.west);
+
+    \end{tikzpicture}
+  }
+  \caption{Classification head of the CNN Architecture.}
+  \label{fig:cnn_head}
+\end{figure}
+
+Model optimization is driven by the Adam optimizer initialized with a conservative learning rate of $3 \times 10^{-5}$ to ensure steady convergence across the loss surface. Given the binary structure of the objective function, training leverages a Binary Cross-Entropy loss mechanism, complemented by a \texttt{ReduceLROnPlateau} scheduling policy designed to dynamically downgrade the learning rate whenever validation loss plateaus. Because the source medical imaging data exhibits an uneven class distribution, evaluation protocols look past baseline accuracy alone. Instead, model stability and generalization are contextualized comprehensively through Area Under the ROC Curve (AUC), Precision, Recall, and F1-Score metrics to guarantee performance validity under distinct class imbalances.

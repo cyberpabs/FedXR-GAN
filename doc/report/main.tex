@@ -5,20 +5,25 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage{caption}
+\captionsetup{justification=centering}
+\usepackage{tikz}
+
 
 \title{Federated Learning for Pneumonia Classification using GAN-Augmented Chest X-Rays}
 
 \author{
-    \IEEEauthorblockN{Pau Camós}
-    \IEEEauthorblockA{\textit{Universitat Politècnica de Catalunya
-        (UPC)}}
-    \and
-    \IEEEauthorblockN{Daniel Alamillo}
-    \IEEEauthorblockA{\textit{Universitat Politècnica de Catalunya
-        (UPC)}}
-}
-
-\begin{document}
+  \IEEEauthorblockN{Pau Camós}
+  \IEEEauthorblockA{\textit{Universitat Politècnica de Catalunya
+  (UPC)}}
+  \and
+  \IEEEauthorblockN{Daniel Alamillo}
+  \IEEEauthorblockA{\textit{Universitat Politècnica de Catalunya
+  (UPC)}}
+  }
+  
+  \begin{document}
+\usetikzlibrary{positioning, fit, calc, arrows.meta, backgrounds}
 
 \maketitle
 
@@ -43,7 +48,9 @@
 \input{004-results}
 \input{005-conclusions}
 
-\bibliographystyle{plain}
+% Ensure bibliography appears in the Table of Contents
+\bibliographystyle{IEEEtran}
 \bibliography{references}
+
 
 \end{document}
